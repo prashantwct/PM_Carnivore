@@ -3,14 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="manifest" href="manifest.json">
-    <link rel="stylesheet" href="style.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <link rel="manifest" href="/manifest.json">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <title>Complete Carnivore PM Form F1</title>
+    <style>
+        /* PDF specific tweaks to ensure professional look */
+        @media print {
+            .no-pdf { display: none !important; }
+            .pm-container { border: none; width: 100%; max-width: 100%; padding: 0; }
+            .card { break-inside: avoid; border: 1px solid #000; }
+            input, textarea { border: 1px solid #ccc !important; }
+        }
+        .system-box { border: 1px dashed #2e7d32; padding: 10px; margin: 10px 0; border-radius: 4px; background: #f1f8e9; }
+        .img-preview img { width: 100%; max-width: 300px; margin-top: 10px; border-radius: 4px; border: 1px solid #ddd; }
+        .photo-item { border: 1px solid #ccc; padding: 15px; margin-bottom: 15px; background: #fff; border-radius: 5px; }
+    </style>
 </head>
 <body>
-    <div class="pm-container">
-        <h1>Post-Mortem Examination Form for Carnivores</h1>
+    <div id="printable-area" class="pm-container">
+        <h1>POST-MORTEM EXAMINATION FORM (F1)</h1>
         <form id="pmForm">
             
             <div class="card">
@@ -66,18 +78,9 @@
             </div>
 
             <div class="card">
-                <h3>III. History & Identification</h3>
-                <label>Duration of sickness before death:</label><input type="text" name="sickness_dur">
-                <label>Clinical signs and symptoms Observed:</label><textarea name="signs"></textarea>
-                <label>Treatment given, if any:</label><textarea name="treatment"></textarea>
-                <label>Animal Identification (local ID):</label><input type="text" name="local_id">
-
-                <h3>IV. Body Measurements</h3>
-                <button type="button" class="cam-btn" onclick="document.getElementById('img_measurements').click()">📷 Capture Measurements Photo</button>
-                <input type="file" id="img_measurements" class="pm-photo" accept="image/*" capture="environment" style="display:none">
-                
+                <h3>IV. Body Measurements & V. Teeth</h3>
                 <div class="grid">
-                    <div><label>i. Body length (Nose to Tail):</label><input type="text" name="body_len"></div>
+                    <div><label>i. Body length:</label><input type="text" name="body_len"></div>
                     <div><label>ii. Tail length:</label><input type="text" name="tail_len"></div>
                 </div>
                 <div class="grid-3">
@@ -85,59 +88,23 @@
                     <div><label>iv. Neck girth:</label><input type="text" name="neck_g"></div>
                     <div><label>v. Chest girth:</label><input type="text" name="chest_g"></div>
                 </div>
-                
-                <label>vi. Fore limbs Length:</label>
                 <div class="grid">
-                    <div><label>a. Right (cm):</label><input type="text" name="fore_r_len"></div>
-                    <div><label>b. Left (cm):</label><input type="text" name="fore_l_len"></div>
-                </div>
-                <label>vii. Hind limbs Length:</label>
-                <div class="grid">
-                    <div><label>a. Right (cm):</label><input type="text" name="hind_r_len"></div>
-                    <div><label>b. Left (cm):</label><input type="text" name="hind_l_len"></div>
-                </div>
-
-                <label>V. Nails (Fore/Hind R & L):</label><input type="text" name="nails">
-                <label>VI. Whiskers:</label><input type="text" name="whiskers">
-
-                <h3>V. Teeth (Canines & Incisors)</h3>
-                <button type="button" class="cam-btn" onclick="document.getElementById('img_teeth').click()">📷 Capture Teeth Photo</button>
-                <input type="file" id="img_teeth" class="pm-photo" accept="image/*" capture="environment" style="display:none">
-                
-                <label>i. Canines Presence/Absence</label>
-                <div class="grid">
-                    <div><label>Upper Jaw Absent:</label><input type="checkbox" name="u_absent"></div>
-                    <div><label>Lower Jaw Absent:</label><input type="checkbox" name="l_absent"></div>
-                </div>
-                <div class="grid">
-                    <div><label>No. Upper Canines:</label><input type="number" name="u_can_no"></div>
-                    <div><label>No. Lower Canines:</label><input type="number" name="l_can_no"></div>
+                    <div><label>Upper Canines No:</label><input type="number" name="u_can_no"></div>
+                    <div><label>Lower Canines No:</label><input type="number" name="l_can_no"></div>
                 </div>
             </div>
 
             <div class="card">
                 <h3>VI. Detailed Post-Mortem Examination</h3>
-                <label>i. Body condition:</label><input type="text" name="body_condition">
-                <label>ii. Skin Coat:</label><input type="text" name="skin_coat">
-                <label>iii. Status of Rigor Mortis:</label><input type="text" name="rigor_mortis">
-                <label>iv. Maggots:</label><input type="text" name="maggots">
-                
-                <label>IX. External Injuries:</label>
-                <button type="button" class="cam-btn" onclick="document.getElementById('img_ext_injuries').click()">📷 Capture Injury Photo</button>
-                <input type="file" id="img_ext_injuries" class="pm-photo" accept="image/*" capture="environment" style="display:none">
-                <textarea name="ext_injuries"></textarea>
-                
                 <div class="system-box">
                     <label>3. Digestive System</label>
-                    <button type="button" class="cam-btn" onclick="document.getElementById('img_digestive').click()">📷 Capture Digestive Photo</button>
-                    <input type="file" id="img_digestive" class="pm-photo" accept="image/*" capture="environment" style="display:none">
                     <div class="grid">
                         <div><label>Oral:</label><input type="text" name="dig_oral"></div>
                         <div><label>Tongue:</label><input type="text" name="dig_tongue"></div>
                         <div><label>Pharynx:</label><input type="text" name="dig_pharynx"></div>
-                        <div><label>Oesophagus:</label><input type="text" name="dig_oesophagus"></div>
+                        <div><label>Oesophagus:</label><input type="text" name="dig_oes"></div>
                         <div><label>Stomach:</label><input type="text" name="dig_stomach"></div>
-                        <div><label>Intestines:</label><input type="text" name="dig_intestines"></div>
+                        <div><label>Intestines:</label><input type="text" name="dig_int"></div>
                         <div><label>Liver:</label><input type="text" name="dig_liver"></div>
                         <div><label>Gall Bladder:</label><input type="text" name="dig_gb"></div>
                     </div>
@@ -145,19 +112,15 @@
 
                 <div class="system-box">
                     <label>4. Respiratory System</label>
-                    <button type="button" class="cam-btn" onclick="document.getElementById('img_respiratory').click()">📷 Capture Respiratory Photo</button>
-                    <input type="file" id="img_respiratory" class="pm-photo" accept="image/*" capture="environment" style="display:none">
                     <div class="grid">
-                        <div><label>Nasal:</label><input type="text" name="resp_nasal"></div>
-                        <div><label>Trachea:</label><input type="text" name="resp_trachea"></div>
-                        <div><label>Lungs:</label><input type="text" name="resp_lungs"></div>
+                        <div><label>Nasal:</label><input type="text" name="res_nasal"></div>
+                        <div><label>Trachea:</label><input type="text" name="res_trachea"></div>
+                        <div><label>Lungs:</label><input type="text" name="res_lungs"></div>
                     </div>
                 </div>
 
                 <div class="system-box">
                     <label>5. Cardiovascular</label>
-                    <button type="button" class="cam-btn" onclick="document.getElementById('img_cardio').click()">📷 Capture Cardiovascular Photo</button>
-                    <input type="file" id="img_cardio" class="pm-photo" accept="image/*" capture="environment" style="display:none">
                     <div class="grid">
                         <div><label>Heart Muscle:</label><input type="text" name="card_muscle"></div>
                         <div><label>Chambers:</label><input type="text" name="card_chambers"></div>
@@ -167,20 +130,16 @@
 
                 <div class="system-box">
                     <label>6. Uro-Genital System</label>
-                    <button type="button" class="cam-btn" onclick="document.getElementById('img_uro').click()">📷 Capture Uro-Genital Photo</button>
-                    <input type="file" id="img_uro" class="pm-photo" accept="image/*" capture="environment" style="display:none">
                     <div class="grid">
                         <div><label>Urine:</label><input type="text" name="uro_urine"></div>
                         <div><label>Bladder:</label><input type="text" name="uro_bladder"></div>
                         <div><label>Kidneys:</label><input type="text" name="uro_kidneys"></div>
-                        <div><label>Reproductive Organs:</label><input type="text" name="uro_repro"></div>
+                        <div><label>Reproductive:</label><input type="text" name="uro_repro"></div>
                     </div>
                 </div>
 
                 <div class="system-box">
                     <label>7. Internal Injuries</label>
-                    <button type="button" class="cam-btn" onclick="document.getElementById('img_int_inj').click()">📷 Capture Internal Injury Photo</button>
-                    <input type="file" id="img_int_inj" class="pm-photo" accept="image/*" capture="environment" style="display:none">
                     <div class="grid">
                         <div><label>Muscle:</label><input type="text" name="inj_muscle"></div>
                         <div><label>Bones:</label><input type="text" name="inj_bones"></div>
@@ -189,141 +148,115 @@
             </div>
 
             <div class="card">
-                <h3>VII. Summary of Major Findings</h3>
-                <textarea name="summary_findings" placeholder="Summary..."></textarea>
-
-                <h3>VIII. Diagnosis / Opinion</h3>
-                <textarea name="diagnosis_opinion" placeholder="Diagnosis..."></textarea>
+                <h3>XII. Summary of Major Findings</h3>
+                <textarea name="summary_findings" rows="4"></textarea>
+                <h3>XIII. Diagnosis / Opinion</h3>
+                <textarea name="diagnosis_opinion" rows="4"></textarea>
             </div>
 
             <div class="card">
-                <h3>XIV. Specimens collected for laboratory investigations</h3>
+                <h3>XIV. Specimens Collected</h3>
                 <table id="sampleTable">
                     <thead>
                         <tr>
-                            <th>S.No</th>
                             <th>Sample No.</th>
-                            <th>Sample Type</th>
+                            <th>Type</th>
                             <th>Preservative</th>
                             <th>Exam Required</th>
-                            <th>Laboratory Address</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
-                            <td>1</td>
                             <td><input type="text" name="s_no[]"></td>
                             <td><input type="text" name="s_type[]"></td>
                             <td><input type="text" name="s_pres[]"></td>
                             <td><input type="text" name="s_exam[]"></td>
-                            <td><input type="text" name="s_lab[]"></td>
                         </tr>
                     </tbody>
                 </table>
-                <button type="button" class="add-btn" onclick="addSampleRow()">+ Add Sample Row</button>
+                <button type="button" class="add-btn no-pdf" onclick="addSampleRow()">+ Add Sample Row</button>
             </div>
 
             <div class="card">
                 <h3>XV. Photo Annexure (Unlimited)</h3>
                 <div id="dynamicPhotoContainer">
-                    <div class="photo-item" style="border: 1px dashed #ccc; padding: 10px; margin-bottom: 10px;">
-                        <input type="text" name="photo_desc[]" placeholder="Photo Description (e.g. Full Carcass)" style="margin-bottom: 5px;">
-                        <button type="button" class="cam-btn" onclick="this.nextElementSibling.click()">📷 Capture Photo</button>
-                        <input type="file" name="unlimited_photos[]" class="pm-photo" accept="image/*" capture="environment" style="display:none">
+                    <div class="photo-item">
+                        <input type="text" name="photo_desc[]" placeholder="Photo Description (e.g. Left Lateral View)">
+                        <button type="button" class="cam-btn no-pdf" onclick="this.nextElementSibling.click()">📷 Take Photo</button>
+                        <input type="file" accept="image/*" capture="environment" style="display:none" onchange="previewImg(this)">
+                        <div class="img-preview"></div>
                     </div>
                 </div>
-                <button type="button" class="add-btn" onclick="addPhotoField()">+ Add Another Photo</button>
+                <button type="button" class="add-btn no-pdf" onclick="addPhotoField()">+ Add Another Photo</button>
             </div>
 
             <div class="card">
                 <div class="grid">
                     <div style="text-align:center; border-top:1px solid #000; padding-top:10px;">
-                        <strong>(Dr. .....................)</strong><br>Wildlife Health Officer (VO 1)
+                        <strong>(Dr. .....................)</strong><br>VO 1
                     </div>
                     <div style="text-align:center; border-top:1px solid #000; padding-top:10px;">
-                        <strong>(Dr. .....................)</strong><br>Veterinary Officer 2
+                        <strong>(Dr. .....................)</strong><br>VO 2
                     </div>
                 </div>
-                <button type="submit" class="submit-btn">SUBMIT & DOWNLOAD PDF REPORT</button>
+                <button type="button" class="submit-btn no-pdf" onclick="generateProfessionalPDF()">GENERATE & DOWNLOAD REPORT</button>
             </div>
         </form>
     </div>
 
     <script>
-        if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');
-        
         function addSampleRow() {
             const table = document.getElementById("sampleTable").getElementsByTagName('tbody')[0];
-            const rowCount = table.rows.length;
-            const row = table.insertRow(rowCount);
-            row.innerHTML = `<td>${rowCount + 1}</td><td><input type="text" name="s_no[]"></td><td><input type="text" name="s_type[]"></td><td><input type="text" name="s_pres[]"></td><td><input type="text" name="s_exam[]"></td><td><input type="text" name="s_lab[]"></td>`;
+            const row = table.insertRow();
+            row.innerHTML = `<td><input type="text" name="s_no[]"></td><td><input type="text" name="s_type[]"></td><td><input type="text" name="s_pres[]"></td><td><input type="text" name="s_exam[]"></td>`;
         }
 
         function addPhotoField() {
             const container = document.getElementById('dynamicPhotoContainer');
-            const newField = document.createElement('div');
-            newField.className = 'photo-item';
-            newField.style = "border: 1px dashed #ccc; padding: 10px; margin-bottom: 10px;";
-            newField.innerHTML = `
-                <input type="text" name="photo_desc[]" placeholder="Photo Description" style="margin-bottom: 5px;">
-                <button type="button" class="cam-btn" onclick="this.nextElementSibling.click()">📷 Capture Photo</button>
-                <input type="file" name="unlimited_photos[]" class="pm-photo" accept="image/*" capture="environment" style="display:none">
+            const div = document.createElement('div');
+            div.className = 'photo-item';
+            div.innerHTML = `
+                <input type="text" name="photo_desc[]" placeholder="Photo Description">
+                <button type="button" class="cam-btn no-pdf" onclick="this.nextElementSibling.click()">📷 Take Photo</button>
+                <input type="file" accept="image/*" capture="environment" style="display:none" onchange="previewImg(this)">
+                <div class="img-preview"></div>
             `;
-            container.appendChild(newField);
+            container.appendChild(div);
         }
 
-        document.getElementById('pmForm').onsubmit = async (e) => {
-            e.preventDefault();
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            const formData = new FormData(e.target);
-            
-            let yPos = 20;
-            doc.setFontSize(16);
-            doc.text("POST-MORTEM EXAMINATION REPORT (F1)", 105, yPos, { align: "center" });
-            
-            doc.setFontSize(10);
-            yPos += 10;
-            
-            // Text data compilation
-            for (let [key, value] of formData.entries()) {
-                if (typeof value === 'string' && value.trim() !== "" && !key.includes('[]')) {
-                    if (yPos > 280) { doc.addPage(); yPos = 20; }
-                    doc.text(`${key.replace(/_/g, ' ').toUpperCase()}: ${value}`, 10, yPos);
-                    yPos += 7;
-                }
-            }
-
-            // Photo Annexure Compilation
-            const photoElements = document.querySelectorAll('.pm-photo');
-            const descriptions = document.getElementsByName('photo_desc[]');
-            let unlimitedIdx = 0;
-
-            for (const input of photoElements) {
-                if (input.files && input.files[0]) {
-                    const imgData = await readFileAsDataURL(input.files[0]);
-                    doc.addPage();
-                    doc.setFontSize(14);
-                    
-                    // Determine label: use description if dynamic, otherwise use field ID
-                    let label = input.id ? input.id.replace('img_', '').toUpperCase() : descriptions[unlimitedIdx++].value || "Additional Photo";
-                    
-                    doc.text(`ANNEXURE: ${label}`, 105, 20, { align: "center" });
-                    doc.addImage(imgData, 'JPEG', 10, 30, 180, 120);
-                }
-            }
-
-            doc.save("Carnivore_PM_Report_Final.pdf");
-        };
-
-        function readFileAsDataURL(file) {
-            return new Promise((resolve) => {
+        function previewImg(input) {
+            const preview = input.nextElementSibling;
+            if (input.files && input.files[0]) {
                 const reader = new FileReader();
-                reader.onload = () => resolve(reader.result);
-                reader.readAsDataURL(file);
+                reader.onload = e => preview.innerHTML = `<img src="${e.target.result}">`;
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function generateProfessionalPDF() {
+            const element = document.getElementById('printable-area');
+            const pmCode = document.querySelector('input[name="pm_code"]').value || "F1_Report";
+            
+            // Sync current input/textarea values so they appear in the PDF snapshot
+            const inputs = element.querySelectorAll('input, textarea');
+            inputs.forEach(input => {
+                if(input.type !== 'file') {
+                    input.setAttribute('value', input.value);
+                    if(input.tagName === 'TEXTAREA') input.innerHTML = input.value;
+                }
             });
+
+            const opt = {
+                margin: [10, 10, 10, 10],
+                filename: `PM_Report_${pmCode}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+            };
+
+            html2pdf().set(opt).from(element).save();
         }
     </script>
 </body>
 </html>
-
