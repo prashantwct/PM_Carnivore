@@ -38,6 +38,12 @@ python app.py            # http://localhost:5000  (FLASK_DEBUG=1 for debug mode)
 The app is static, so any static host also works. `jsPDF` and `jspdf-autotable` are vendored
 in `vendor/`, so nothing is fetched from a CDN and the form works with no signal once loaded.
 
+## Hosting on GitHub Pages
+
+Settings → Pages → Source: *Deploy from a branch* → `main` / `/ (root)`. The app is then at
+`https://prashantwct.github.io/pm_carnivore/` (HTTPS, needed for GPS and offline use). Open it once
+on the phone with signal, then *Add to Home Screen*.
+
 ## Changing the form
 
 `form.js` is the single definition of steps, sections, fields, chips and hints. The wizard and
