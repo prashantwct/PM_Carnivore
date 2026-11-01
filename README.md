@@ -21,7 +21,7 @@ saves a draft as you type, and produces a PDF laid out like the MPFD post-mortem
 | 12 Photos | XV Photo annexure |
 | 13 Review | Gaps list with jump-to links, date, place, signatories, PDF |
 
-Helpers: quick-fill chips (Putrefied, N.A.D., Not assessable…), "Now" for date/time, GPS
+Helpers: **Suggestions ▾** dropdowns on most fields (findings drawn from reviewed carnivore post-mortems; in text areas several can be combined; `[brackets]` mark a detail to complete, and the review step flags any left), "Now" for date/time, GPS
 button, per-section camera slots with captions and a *scale in frame* tick, and a review list
 of anything still blank. Blank fields print as "Not recorded".
 
@@ -46,7 +46,7 @@ on the phone with signal, then *Add to Home Screen*.
 
 ## Changing the form
 
-`form.js` is the single definition of steps, sections, fields, chips and hints. The wizard and
+`form.js` is the single definition of steps, sections, fields, dropdown suggestions (`SUGG`) and hints. The wizard and
 the PDF both read it, so editing a label or adding a field there changes both. Bump `VERSION`
 in `sw.js` after any change so installed copies pick it up.
 

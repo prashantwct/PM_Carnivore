@@ -245,7 +245,118 @@ const FORM = [
   ] },
 ];
 
-const LESION_TYPES = ["Linear groove / burn", "Crater", "Round lesion", "Avulsion", "Laceration",
+/* Dropdown suggestions, drawn from findings recorded in reviewed carnivore post-mortems
+ * (tiger electrocution, tiger head trauma, leopard carcass, leopard cub road-kill).
+ * Wording is descriptive; interpretation belongs in XII / XIII. Square brackets mark
+ * a detail to complete after picking. Each entry: "text" or { t: menu label, v: text written }.
+ * Applied over the chips above, keyed by field. Long-text organ fields become text areas
+ * so that several suggestions can be combined. */
+const BASE = ["N.A.D.", NA_DECOMP, "Putrefied", "Not examined (give reason)"];
+const SUGG = {
+  mm_ocular: [...BASE, "Pale", "Congested", "Icteric (yellow)", "Cyanotic", "Petechial haemorrhages on the conjunctiva"],
+  mm_oral: [...BASE, "Maggots present", "Pale", "Congested", "Cyanotic", "Soiled with sand / mud"],
+  sub_fat: [NA_DECOMP, "Adequate", "Scanty", "Abundant", "Absent"],
+  body_cavities: [
+    "No free fluid in the pleural, pericardial or peritoneal cavity",
+    { t: "Blood-tinged fluid in the thoracic cavity", v: "Blood-tinged fluid in the thoracic cavity, [quantity] ml." },
+    { t: "Free blood in the abdominal cavity", v: "Free blood in the abdominal cavity, [quantity] ml, [clotted / unclotted]." },
+    { t: "Pericardial fluid", v: "Pericardial fluid, [quantity] ml, [colour]." },
+    "Cavity contents liquefied and putrefied (post-mortem change)",
+  ],
+  dig_oral: [...BASE, "Maggots present in the oral cavity", "Soiled with sand / mud",
+    { t: "Blood-tinged froth in the mouth", v: "Blood-tinged froth in the oral cavity." },
+    { t: "Tooth fracture, pulp exposed", v: "Fractured [tooth], pulp exposed; edges [fresh / worn and stained], i.e. [recent / old]." },
+    { t: "Deposit on a tooth", v: "[Colour] deposit on the [tooth]; sampled for metal analysis." },
+    { t: "Porcupine quills embedded", v: "Porcupine quill(s) embedded at [site]." },
+    { t: "Dental abscess / gingival lesion", v: "Abscess or ulcer of the gingiva at [site]." }],
+  dig_tongue: [...BASE, "Within the oral cavity, no bite marks", "Protruding from the mouth", "Bite mark on the tongue", "Congested"],
+  dig_pharynx: [...BASE, "No froth, fluid or foreign material", "Froth present", "Sand / mud present", "Water present", "Porcupine quill(s) present"],
+  dig_oesophagus: [...BASE, "Empty, no foreign material", "Contains froth / fluid", "Contains water", "Foreign body present"],
+  dig_stomach: [...BASE, "Empty",
+    { t: "Contains partly digested meat, hair, bone", v: "Contains partly digested meat, hair and bone, approx. [quantity]." },
+    { t: "Dark tarry contents", v: "Dark tarry contents (altered blood), approx. [quantity]." },
+    "Contains fluid / water",
+    { t: "Mucosal haemorrhages", v: "Haemorrhages on the gastric mucosa at [site]." },
+    { t: "Nodular growths on the mucosa", v: "[Number] firm nodules, [size] mm, at [site], with central openings containing nematodes (parasitic gastric nodules); [sampled / not sampled]." }],
+  dig_small: [...BASE, "Empty", "Dark tarry contents", "Mucosal haemorrhages", "Nematodes in the lumen", "Gas-distended (post-mortem)"],
+  dig_large: [...BASE, "Faeces formed", "Dark tarry contents", "Nematodes / tapeworms in the lumen",
+    { t: "Rectal prolapse", v: "Rectal prolapse present; consistent with post-mortem gas pressure." }],
+  dig_liver: [...BASE, "Congested", "Pale", "Friable",
+    { t: "Multifocal white-tan foci", v: "Multifocal white-tan foci, [size] mm, [raised / depressed], on the surface and cut section; sampled for histopathology." },
+    "Gall bladder distended", "Gall bladder normal"],
+  resp_nasal: [...BASE, "No discharge", "Blood-tinged discharge from the nostrils", "Froth in the nasal cavity", "Sand / mud / water in the nasal cavity", "Maggots present"],
+  resp_trachea: [...BASE, "Clear; no froth, fluid or sand", "Froth present", "Blood-tinged fluid present", "Sand / mud present", "Water present"],
+  resp_lungs: [...BASE, "Congested",
+    { t: "Heavy, wet, oedematous", v: "Heavy, wet and oedematous; frothy fluid on cut section." },
+    { t: "Haemorrhages", v: "[Petechial / ecchymotic] haemorrhages on [lobes]." },
+    "Consolidated areas (focal)", "Lungworm / nematodes in the airways"],
+  card_sac: [...BASE, "Intact; no excess fluid",
+    { t: "Pericardial fluid", v: "Pericardial fluid, [quantity] ml, [colour]." },
+    "Haemopericardium", "Petechial haemorrhages on the epicardium"],
+  card_muscle: [...BASE, "Wall thickness and colour normal", "Pale myocardium",
+    { t: "Epi / endocardial haemorrhages", v: "[Epicardial / subendocardial] haemorrhages at [site]." },
+    { t: "Ruptured", v: "Rupture of the [chamber wall], [size] cm; [seen in situ / found after evisceration]; haemorrhage at the margins [present / absent]." }],
+  card_chambers: [...BASE, "Blood in all four chambers, unclotted", "Blood in all four chambers, clotted", "Chambers empty", "Valves normal"],
+  card_spleen: [...BASE, "Normal size", "Enlarged", "Congested", "Haemorrhages", "Ruptured"],
+  uro_urine: ["Bladder empty", "Clear yellow urine",
+    { t: "Dark amber / orange-brown urine", v: "Dark amber to orange-brown urine, [quantity] ml; collected by syringe." },
+    "Blood-tinged urine", "N.A."],
+  uro_bladder: [...BASE, "Empty", "Distended with urine", "Mucosal haemorrhages"],
+  uro_kidneys: [...BASE, "Normal size, colour and capsule", "Congested", "Pale", "Cortical scarring / pitting", "Haemorrhages"],
+  uro_male: ["N.A.D.", "Putrefied", "N.A."],
+  uro_uterus: ["N.A.", "Putrefied", "Non-gravid",
+    { t: "Gravid", v: "Gravid; [number] foetuses, crown-rump [cm]." }],
+  uro_mammary: ["N.A.", "Non-lactating", "Lactating", "Not assessable"],
+  inj_muscle: [
+    "No haemorrhage in the muscles examined",
+    { t: "Haemorrhage in limb muscles", v: "Haemorrhage in the [fore / hind] limb muscles, [side], [site]." },
+    { t: "Paravertebral haemorrhages", v: "Paravertebral haemorrhages, [bilateral / side], [site]." },
+    { t: "Haemorrhage in head / neck muscles", v: "Haemorrhage in the [temporal / masseter / neck] muscles, [side]." },
+    { t: "Haemorrhage beneath lesion", v: "Haemorrhage in the subcutis and muscle beneath lesion [no.]; localised, fixed, not removed by washing." },
+    { t: "Pale streaky areas", v: "Pale streaky areas in [muscle], [site] (possible capture myopathy)." },
+    "Dependent-side hypostasis only; not haemorrhage",
+    "Porcupine quills embedded in the muscle",
+  ],
+  inj_bones: ["N.A.D. No fractures observed", "N.A.D.", NA_DECOMP,
+    { t: "Fracture", v: "Fracture of [bone], [side], [site]; [comminuted / simple]; haemorrhage at the fracture ends [present / absent]." },
+    { t: "Skull fracture", v: "[Comminuted] fracture of the [skull bone]; brain tissue [extruded / not extruded]." },
+    "Old healed fracture"],
+  nerv_brain: [...BASE, "Not examined (skull not opened)", "Meningeal vessels engorged",
+    { t: "Haemorrhage", v: "Haemorrhage in the [subdural / subarachnoid / brain] at [site]." },
+    "Brain liquefied (autolysis)", "Brain extruded through a skull fracture"],
+  other_findings: [
+    "Ticks present on the skin",
+    { t: "Old healed scars", v: "Old healed scar(s) at [site]." },
+    { t: "Quills in the skin", v: "Porcupine quill(s) in the skin at [site]." },
+    { t: "Lesion on the reflected skin", v: "On the reflected skin: [lesion], [site], haemorrhage beneath [present / absent]." },
+    "Sample integrity: viscera were placed on [surface]; control sample taken",
+  ],
+  summary_findings: [
+    { t: "Haemorrhage beneath lesions (vital reaction)", v: "Haemorrhage beneath the lesions at [sites]; localised, fixed in the tissue and absent at the control site (photo [no.])." },
+    { t: "Airways clear", v: "Trachea and bronchi free of froth, sand and water." },
+    { t: "Lesion pattern and wire", v: "Linear lesions at [sites]; groove width [x] mm against wire diameter [x] mm." },
+    { t: "Blood in all heart chambers, vessels engorged", v: "Blood in all four heart chambers with engorged major vessels." },
+    { t: "Skull fracture with brain injury", v: "Fracture of the [skull bone] with [brain extrusion / intracranial haemorrhage]." },
+    { t: "Teeth and claws intact", v: "All canines, incisors, claws and whiskers present (no evidence of removal of body parts)." },
+    { t: "Decomposition changes listed apart", v: "Bloating, skin slippage and putrefaction are decomposition changes and are not findings of cause." },
+  ],
+  diagnosis_opinion: [
+    { t: "Cause reserved pending lab results", v: "The cause of death is reserved pending histopathology and toxicology." },
+    { t: "Consistent with electrical injury", v: "The findings are consistent with electrical injury; confirmation awaits histopathology and metal analysis of the wire and lesions." },
+    { t: "Consistent with blunt trauma (vehicle)", v: "The findings are consistent with blunt force trauma from a vehicle strike." },
+    { t: "Consistent with head trauma", v: "The findings are consistent with blunt force head trauma leading to cardiorespiratory failure." },
+    { t: "Consistent with a bite injury", v: "The findings are consistent with a bite injury from a [species]." },
+    { t: "Poisoning not excluded", v: "Poisoning is not excluded; confirmation awaits toxicology of liver, kidney and stomach contents." },
+    { t: "Cannot be determined (decomposition)", v: "The cause of death cannot be determined because of advanced decomposition." },
+  ],
+};
+FORM.forEach((st) => st.sections.forEach((sec) => (sec.fields || []).forEach((f) => {
+  if (!SUGG[f.k]) return;
+  f.chips = SUGG[f.k];
+  if (!f.type && /^(dig|resp|card|uro_(urine|bladder|kidneys)|nerv|mm|sub)_/.test(f.k)) f.type = "textarea";
+})));
+
+const LESION_TYPES = ["Linear groove / burn", "Crater", "Row of small depressed lesions", "Round lesion", "Avulsion", "Laceration",
   "Puncture", "Abrasion", "Ligature mark"];
 
 const SAMPLE_PRESETS = [

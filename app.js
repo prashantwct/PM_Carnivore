@@ -117,14 +117,10 @@
       const t = { date: "date", datetime: "datetime-local", number: "number" }[f.type] || "text";
       input = `<input id="${id}" data-k="${f.k}" type="${t}" ${f.type === "number" ? 'inputmode="numeric" min="0"' : ""} value="${esc(val)}" autocomplete="off">`;
     }
-    const chips = (f.chips || []).map((c) => {
-      c = typeof c === "string" ? { t: c } : c;
-      const cv = c.v ?? c.t;
-      return `<button type="button" class="chip" data-act="chip" data-k="${f.k}" data-t="${esc(cv)}"
-        ${c.set ? `data-set="${esc(JSON.stringify(c.set))}"` : ""} aria-pressed="${val === cv}">${esc(c.t)}</button>`;
-    }).join("");
+    const opts = (f.chips || []).map((c, i) => `<option value="${i}">${esc(typeof c === "string" ? c : c.t)}</option>`).join("");
+    const sel = opts ? `<select class="sugg" data-sugg="${f.k}" aria-label="Suggestions for ${esc(f.label)}"><option value="">Suggestions ▾</option>${opts}</select>` : "";
     const now = f.now ? `<button type="button" class="chip" data-act="now" data-k="${f.k}" data-type="${f.type}">Now</button>` : "";
-    const row = chips || now ? `<div class="chips">${now}${chips}</div>` : "";
+    const row = sel || now ? `<div class="chips">${now}${sel}</div>` : "";
     return `<div class="${cls}"><label for="${id}">${esc(f.label)}</label>${input}
       ${f.hint ? `<div class="hint">${esc(f.hint)}</div>` : ""}${row}</div>`;
   }
@@ -157,8 +153,8 @@
       ${inp("exam", "Examination required")}${inp("lab", "Laboratory address")}
     </div>`;
   }
-  const samplesHtml = () => `<div class="chips presets"><span class="hint">Add a common specimen:</span>
-      ${SAMPLE_PRESETS.map((p, i) => `<button type="button" class="chip" data-act="preset" data-i="${i}">${esc(p.type)}</button>`).join("")}</div>
+  const samplesHtml = () => `<div class="chips presets"><select class="sugg" data-preset aria-label="Add a common specimen"><option value="">Add a common specimen ▾</option>
+      ${SAMPLE_PRESETS.map((p, i) => `<option value="${i}">${esc(p.type)} (${esc(p.exam)})</option>`).join("")}</select></div>
     <div id="sampleList">${S.samples.map(sampleCard).join("")}</div>
     <button type="button" class="btn ghost" data-act="addSample">＋ Add a blank specimen</button>`;
 
@@ -188,6 +184,7 @@
     ].forEach(([k, l]) => need(k, l));
     if (!S.lesions.length && !isFilled(S.v.injuries_neg) && !isFilled(S.v.ext_injuries))
       gaps.push({ label: "External injuries (record lesions or pertinent negatives)", step: KEY_STEP.injuries_neg });
+    ALL_FIELDS.forEach((f) => { if (/\[[^\]]+\]/.test(String(S.v[f.k] ?? ""))) gaps.push({ label: `${f.label}: finish the [bracketed] detail`, step: KEY_STEP[f.k] }); });
     if (!S.samples.length) gaps.push({ label: "Specimens collected (or note why none)", step: FORM.findIndex((s) => s.id === "samples") });
     if (!S.photos.length) gaps.push({ label: "Photographs", step: FORM.findIndex((s) => s.id === "photos") });
     const noScale = S.photos.filter((p) => /^IX/.test(p.tag) && !p.scale).length;
@@ -261,8 +258,6 @@
     S.v[k] = v;
     const el = document.getElementById("f_" + k);
     if (el) el.value = v;
-    document.querySelectorAll(`.chip[data-k="${k}"][data-act="chip"]`).forEach((b) =>
-      b.setAttribute("aria-pressed", b.dataset.t === v));
   }
   const localNow = (type) => {
     const d = new Date(); d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
@@ -273,8 +268,6 @@
     const t = e.target;
     if (t.dataset.k) {
       S.v[t.dataset.k] = t.type === "checkbox" ? t.checked : t.value;
-      document.querySelectorAll(`.chip[data-k="${t.dataset.k}"][data-act="chip"]`).forEach((b) =>
-        b.setAttribute("aria-pressed", b.dataset.t === t.value));
     } else if (t.dataset.rep) {
       S[t.dataset.rep][+t.dataset.i][t.dataset.f] = t.value;
     } else if (t.dataset.photo) {
@@ -305,19 +298,31 @@
 
   function refreshList(id, html) { $(id).innerHTML = html; }
 
+  document.addEventListener("change", (e) => {
+    const sel = e.target.closest("select.sugg"); if (!sel || sel.value === "") return;
+    const i = +sel.value; sel.value = "";
+    if (sel.hasAttribute("data-preset")) {
+      const p = SAMPLE_PRESETS[i];
+      S.samples.push({ no: String(S.samples.length + 1), type: p.type, pres: p.pres, exam: p.exam,
+        lab: (S.samples[S.samples.length - 1] || {}).lab || "" });
+      refreshList("#sampleList", S.samples.map(sampleCard).join("")); scheduleSave();
+      toast("Added. Check preservative and laboratory.");
+      return;
+    }
+    const k = sel.dataset.sugg, f = ALL_FIELDS.find((x) => x.k === k); if (!f) return;
+    const c0 = f.chips[i], c = typeof c0 === "string" ? { t: c0 } : c0, t = c.v ?? c.t;
+    if (f.type === "textarea") {
+      const cur0 = (S.v[k] || "").trim();
+      setField(k, !cur0 ? t : cur0.includes(t) ? cur0 : cur0.replace(/[.;]?$/, ".") + " " + t);
+    } else setField(k, t);
+    if (c.set) Object.entries(c.set).forEach(([kk, vv]) => { if (!isFilled(S.v[kk])) setField(kk, vv); });
+    scheduleSave();
+  });
+
   document.addEventListener("click", async (e) => {
     const b = e.target.closest("[data-act]"); if (!b) return;
     const a = b.dataset.act, k = b.dataset.k;
-    if (a === "chip") {
-      const f = ALL_FIELDS.find((x) => x.k === k);
-      const t = b.dataset.t;
-      if (f && f.type === "textarea") {
-        const cur0 = (S.v[k] || "").trim();
-        setField(k, cur0 && !cur0.includes(t) ? cur0.replace(/\.?$/, ".") + " " + t : (cur0.includes(t) ? cur0 : t));
-      } else setField(k, S.v[k] === t ? "" : t);
-      if (b.dataset.set) Object.entries(JSON.parse(b.dataset.set)).forEach(([kk, vv]) => { if (!isFilled(S.v[kk])) setField(kk, vv); });
-      scheduleSave();
-    } else if (a === "now") {
+    if (a === "now") {
       setField(k, localNow(b.dataset.type)); scheduleSave();
     } else if (a === "gps") {
       const msg = $("#gpsMsg");
@@ -344,12 +349,6 @@
       refreshList("#sampleList", S.samples.map(sampleCard).join(""));
       const last = $("#sampleList .rep:last-child input:nth-of-type(1)"); if (last) last.focus();
       scheduleSave();
-    } else if (a === "preset") {
-      const p = SAMPLE_PRESETS[+b.dataset.i];
-      S.samples.push({ no: String(S.samples.length + 1), type: p.type, pres: p.pres, exam: p.exam,
-        lab: (S.samples[S.samples.length - 1] || {}).lab || "" });
-      refreshList("#sampleList", S.samples.map(sampleCard).join("")); scheduleSave();
-      toast("Added. Check preservative and laboratory.");
     } else if (a === "delSample") {
       S.samples.splice(+b.dataset.i, 1);
       refreshList("#sampleList", S.samples.map(sampleCard).join("")); scheduleSave();

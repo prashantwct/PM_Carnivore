@@ -48,6 +48,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible, button:focus-
 .chip { min-height: 40px; padding: 6px 14px; border-radius: 999px; border: 1.5px solid var(--g); background: #fff; color: var(--g); font: inherit; font-size: .88rem; font-weight: 600; cursor: pointer; }
 .chip[aria-pressed="true"] { background: var(--g); color: #fff; }
 .presets { margin: 0 0 12px; }
+select.sugg { flex: 1 1 220px; min-height: 44px; max-width: 100%; padding: 6px 10px; border: 1.5px solid var(--g); border-radius: 10px; background: #fff; color: var(--g); font: inherit; font-size: .95rem; font-weight: 600; }
 
 /* buttons */
 .btn { min-height: var(--tap); padding: 10px 18px; border-radius: 10px; border: 1.5px solid transparent; font: inherit; font-weight: 700; cursor: pointer; }

@@ -1,5 +1,5 @@
 // Offline shell. Bump VERSION whenever any cached file changes.
-const VERSION = "pmf1-v3";
+const VERSION = "pmf1-v4";
 const ASSETS = [
   "./", "./index.html", "./style.css", "./form.js", "./app.js", "./pdf.js",
   "./manifest.json", "./icons/icon-192.png", "./icons/icon-512.png",
